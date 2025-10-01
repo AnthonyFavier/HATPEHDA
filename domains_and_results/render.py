@@ -121,7 +121,8 @@ def render_new_sol(show_pstate_id=False, show_pair_rank=False):
 
         ipstates_rendered = ipstates_rendered.union({ps.id})
 
-    g.view()
+    # g.view()
+    g.render()
 
 def render_policy(show_pstate_id=False, show_pair_rank=False):
     global g_opti_branch_id
@@ -190,7 +191,8 @@ def render_policy(show_pstate_id=False, show_pair_rank=False):
 
         ipstates_rendered = ipstates_rendered.union({ps.id})
 
-    g.view()
+    # g.view()
+    g.render()
 
 def render_simple():
     global g_opti_branch_id
@@ -251,7 +253,8 @@ def render_simple():
 
         ipstates_rendered = ipstates_rendered.union({ps.id})
 
-    g.view()
+    # g.view()
+    g.render()
 
 def render_generation_step(to_merge,to_propagate,filename='render_dot.gv'):
     global g_opti_branch_id
@@ -317,7 +320,7 @@ def render_generation_step(to_merge,to_propagate,filename='render_dot.gv'):
 
         ipstates_rendered = ipstates_rendered.union({ps.id})
 
-    # g.view()
+    # # g.view()
     g.render()
 
 def render_policy_simple():
@@ -379,7 +382,8 @@ def render_policy_simple():
 
         ipstates_rendered = ipstates_rendered.union({ps.id})
 
-    g.view()
+    # g.view()
+    g.render()
 
 def render_best_trace():
     g = graphviz.Digraph('G', filename='render_dot.gv', format="svg", 
@@ -447,7 +451,8 @@ def render_best_trace():
 
         ipstates_rendered = ipstates_rendered.union({ps.id})
 
-    g.view()
+    # g.view()
+    g.render()
 
 def render_leaf(leaf_id, show_pstate_id=False, show_only_policy=False, show_pair_rank=False):
     s = '0.2'
@@ -518,7 +523,8 @@ def render_leaf(leaf_id, show_pstate_id=False, show_only_policy=False, show_pair
 
         ipstates_rendered = ipstates_rendered.union({ps.id})
 
-    g.view()
+    # g.view()
+    g.render()
 
 def explore():
     g = graphviz.Digraph('G', filename='render_dot.gv', format="svg", 
@@ -580,7 +586,8 @@ def explore():
 
         ipstates_rendered = ipstates_rendered.union({ps.id})
 
-    g.view()
+    # g.view()
+    g.render()
 
     while True:
         print(" ")
@@ -635,7 +642,8 @@ def explore():
 
                 ipstates_rendered = ipstates_rendered.union({ps.id})
 
-            g.view()
+            # g.view()
+            g.render()
 
 
 ###########################
@@ -643,7 +651,7 @@ def explore():
 if __name__ == "__main__":
 
     # sys.argv.append('policy_task_end_early_human_min_work.p')    
-    sys.argv.append('search_space.p')    
+    # sys.argv.append('search_space.p')    
 
     if len(sys.argv)<=1:
         raise Exception("Missing filename...")

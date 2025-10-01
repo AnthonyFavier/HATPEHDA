@@ -6,10 +6,10 @@ from copy import deepcopy
 from hatpehda import gui
 import time
 from hatpehda.causal_links_post_treatment import compute_causal_links
-import pickle
+# import pickle
 
-import cProfile
-import pstats
+# import cProfile
+# import pstats
 
 r_node = None
 
@@ -351,8 +351,8 @@ def node_explo():
     print("Start first exploration")
     first_explo_dur = time.time()
 
-    pr = cProfile.Profile()
-    pr.enable()
+    # pr = cProfile.Profile()
+    # pr.enable()
 
     # hatpehda.test_copy()
 
@@ -360,9 +360,9 @@ def node_explo():
     first_explo_dur = int((time.time() - first_explo_dur)*1000)
     print("\t=> time spent first exploration = {}ms".format(first_explo_dur))
     
-    pr.disable()
-    stats = pstats.Stats(pr).sort_stats("tottime")
-    stats.dump_stats(filename="profiling.prof")
+    # pr.disable()
+    # stats = pstats.Stats(pr).sort_stats("tottime")
+    # stats.dump_stats(filename="profiling.prof")
 
     # gui.show_tree(first_node, "sol", view=True)
     # gui.show_all(hatpehda.get_last_nodes_action(first_node), robot_name, human_name, with_begin="false", with_abstract="true")

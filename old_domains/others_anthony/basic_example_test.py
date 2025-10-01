@@ -6,10 +6,6 @@ from copy import deepcopy
 from hatpehda import gui
 import time
 from hatpehda.causal_links_post_treatment import compute_causal_links
-import pickle
-import rospy
-from hatpehda import ros
-from hatpehda.ros import RosNode
 
 
 r_node = None

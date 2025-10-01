@@ -4,3 +4,4 @@ __pycache__
 build/
 .vscode/
 graph_gui_hatpehda*
+venv/

@@ -288,7 +288,7 @@ def propagate(to_merge, to_propagate):
             new_metrics = deepcopy(ps_to_propagate.get_best_metrics())
             
             new_metrics = compute_new_metrics_generic(new_metrics, parent_ap)
-            if CM.g_domain_name == 'stack':
+            if 'stack' in CM.g_domain_name:
                 new_metrics = compute_new_metrics_domain_specific_stack(new_metrics, parent_ap, ps_to_propagate)
             elif CM.g_domain_name == 'cart_hoffman':
                 new_metrics = compute_new_metrics_domain_specific_cart(new_metrics, parent_ap, ps_to_propagate)

@@ -642,8 +642,8 @@ def explore():
 
 if __name__ == "__main__":
 
-    sys.argv.append('policy_task_end_early_human_min_work.p')    
-    # sys.argv.append('search_space.p')    
+    # sys.argv.append('policy_task_end_early_human_min_work.p')    
+    sys.argv.append('search_space.p')    
 
     if len(sys.argv)<=1:
         raise Exception("Missing filename...")

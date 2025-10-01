@@ -9,3 +9,4 @@ graph_gui_hatpehda*
 *.gv.svg
 *.prof
 ranks*.txt
+venv/

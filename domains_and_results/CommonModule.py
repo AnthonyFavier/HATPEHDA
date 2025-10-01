@@ -2,6 +2,7 @@ from copy import deepcopy, copy
 from typing import Any, Dict, List, Type
 from enum import Enum
 import sys
+import os
 
 ###############
 ## CONSTANTS ##
@@ -29,7 +30,7 @@ class OpType(Enum):
 DEFAULT_ACTION_COST = 1.0
 LRD_ACTION_COST = 1.0
 
-path = "/home/afavier/ws/HATPEHDA/domains_and_results/"
+path = os.path.dirname(os.path.realpath(__file__))+'/'
 
 #############
 ## CLASSES ##

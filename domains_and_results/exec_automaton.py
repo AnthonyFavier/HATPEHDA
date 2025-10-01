@@ -5,11 +5,8 @@ import random
 import dill
 import sys
 from enum import Enum
-import logging as lg
 import logging.config
-import matplotlib.pyplot as plt
 from itertools import permutations
-from progress.bar import IncrementalBar
 import time
 
 

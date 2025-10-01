@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
 import sys
 import os
-from copy import deepcopy
 import time
-from pympler import asizeof
-
 
 import CommonModule as CM
 import ConcurrentModule as ConM
 import solution_checker
-
-import cProfile
-import pstats
 
 ######################################################
 ################### Primitive tasks ##################

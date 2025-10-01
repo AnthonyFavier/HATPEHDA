@@ -8,7 +8,6 @@ import solution_checker
 
 import choice_updater
 from choice_updater import exec_chrono
-import numpy as np
 
 
 def scenario_1():

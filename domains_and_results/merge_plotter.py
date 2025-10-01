@@ -6,8 +6,6 @@ import CommonModule as CM
 
 
 
-import easygui
-
 solutions_1_aligned = dill.load(open(CM.path + "results/dom1/policies_pref_aligned.p", "rb"))
 solutions_2_aligned = dill.load(open(CM.path + "results/dom2/policies_pref_aligned.p", "rb"))
 solutions_3_aligned = dill.load(open(CM.path + "results/dom4/policies_pref_aligned.p", "rb"))

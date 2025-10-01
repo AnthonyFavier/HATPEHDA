@@ -1,13 +1,10 @@
 from typing import Any, Dict, List, Tuple
 import dill
-import graphviz
 import sys
-import concurrent.futures
 import time
 from copy import deepcopy 
 import numpy as np
 
-import matplotlib.pyplot as plt
 
 
 import CommonModule as CM
@@ -291,7 +288,7 @@ def propagate(to_merge, to_propagate):
             new_metrics = deepcopy(ps_to_propagate.get_best_metrics())
             
             new_metrics = compute_new_metrics_generic(new_metrics, parent_ap)
-            if CM.g_domain_name == 'stack_empiler_2':
+            if CM.g_domain_name == 'stack':
                 new_metrics = compute_new_metrics_domain_specific_stack(new_metrics, parent_ap, ps_to_propagate)
             elif CM.g_domain_name == 'cart_hoffman':
                 new_metrics = compute_new_metrics_domain_specific_cart(new_metrics, parent_ap, ps_to_propagate)

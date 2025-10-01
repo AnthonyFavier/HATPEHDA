@@ -3,7 +3,7 @@
 ## Install dependencies
 
 ```
-sudo apt install graphviz
+sudo apt install graphviz libcanberra-gtk-module
 ```
 
 ## Setup a virtual python environement
@@ -15,12 +15,26 @@ pip install --upgrade pip -r requirements.txt --no-cache-dir
 
 
 
-## Run planner by executing problem file
+## Planning
+
+Easier to directly go in subfolder with `cd domains_and_results`
+
+### Exploration
+
+Run one of the problem file, e.g.
 ```
-python3 domains_and_results/stack_empiler_2.py
+python3 stack_empiler_2.py
 ```
 
-## Visualize solution
+### Generate policy from explored search space
 ```
-python3 domains_and_results/render.py
+python3 choice_updater.py
 ```
+
+
+### Visualize solution
+```
+python3 render.py
+```
+
+**Note**: May need to run `unset GTK_PATH` to render

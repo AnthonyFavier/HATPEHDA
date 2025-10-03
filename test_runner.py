@@ -18,26 +18,6 @@ count_results = {
 MAX = 9
 total = 2**MAX
 
-# sys.argv = ['/home/afavier/ws/HATPEHDA/test_runner.py', 'cooking_pasta', 'with_d', 65]
-
-# Get domain name
-domain_list = ["cooking_pasta", "box_prepare", "car_maintenance"]
-if len(sys.argv) < 3:
-    raise Exception("Missing arguements! (domain_name in {}, with_delay \"with_d\", optionnal single one id)".format(domain_list))
-domain = sys.argv[1]
-if domain not in domain_list:
-    raise Exception("Domain name unknown! ({}, has to be in {})".format(domain, domain_list))
-g_with_delay = sys.argv[2]
-
-only_one = None
-if len(sys.argv)>3 and sys.argv[3]!="no":
-    only_one = int(sys.argv[3])
-
-results = f"Domain name : {domain} - {g_with_delay}"
-
-
-# only_one = 0
-
 
 cd_domains = "domains_and_results/"
 cd_results = cd_domains + "results/"
@@ -54,8 +34,8 @@ def run_test(with_contrib="with_c", with_graph="with_g", with_delay=""):
         bar.next()
         print(" ")
 
-        if only_one != None:
-            i = only_one
+        if g_only_one != None:
+            i = g_only_one
 
         n = i+1 if with_contrib=="with_c" else total+i+1
         
@@ -64,8 +44,16 @@ def run_test(with_contrib="with_c", with_graph="with_g", with_delay=""):
             str_delay = "_with_d"
         print(f"# Start run {i}-{with_contrib}{str_delay}")
 
+        command = ["python3", domain+".py", str(i)]
+        if with_contrib!="with_c":
+            command += ['--without_contrib']
+        if with_graph!="with_g":
+            command += ['--without_graph']
+        if with_delay!="with_d":
+            command += ['--without_delay']
+
         f = open(cd_results+"runs/{}-{}{}.txt".format(i, with_contrib, str_delay), "w")
-        process = subprocess.Popen(["python3", cd_domains+domain+".py", with_contrib, with_graph, with_delay, str(i)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         stdout, stderr = process.communicate()
         stdout = stdout.decode('UTF-8')
@@ -77,7 +65,7 @@ def run_test(with_contrib="with_c", with_graph="with_g", with_delay=""):
         f.write(stderr)
         f.close()
         print("\tEnd {}-{}\n".format(i, with_contrib))
-        if only_one!=None:
+        if g_only_one!=None:
             break
         
     bar.finish()
@@ -155,83 +143,104 @@ def treat_output(stdout, stderr, with_contrib, i):
             count_results[with_contrib]["h_wait"].append(i)
         
 
-###################
-### START TESTS ###
-###################
-start_time = time.time()
-with_graph = "with_g"
-with_delay = g_with_delay
-os.system(f"rm {cd_results}runs/*")
-os.system(f"rm {cd_results}run.txt")
-run_test(with_contrib="with_c", with_graph=with_graph, with_delay=with_delay)
-# run_test(with_contrib="without_c", with_graph=with_graph)
-end_time = time.time()
-elapsed_time = int((end_time - start_time)*100)/100
-results+= "\nElasped time = {}s\n".format(elapsed_time)
-###################
-#### END TESTS ####
-###################
+domain_list = ["cooking_pasta", "box_prepare", "car_maintenance"]
 
-av_nb_h_wait/=nb_plans
-av_nb_com/=nb_plans
-av_length/=nb_plans
-av_nb_delay/=nb_plans
+import click
+@click.command(help=f"Domains: {domain_list}")
+@click.argument('domain_name')
+@click.option('--without_contrib', is_flag=True, default=False, help="Disable contribution: only HATPEHDA.")
+@click.option('--without_graph', is_flag=True, default=False, help="Disable generation of image graph of solution plan.")
+@click.option('--without_delay', is_flag=True, default=False, help="Disable usage of Delay.")
+@click.option('--init_state_id', default=None, help="Specifies the initial state config id.")
+def main(domain_name, without_contrib, without_graph, without_delay, init_state_id):
+    global g_only_one, results, domain
 
-## With_c ##
-nb_failed_with = len(count_results["with_c"]["failed"])
-nb_success_with = (total-nb_failed_with)
-ratio_success_with = get_ratio(nb_success_with, total)
+    with_contrib = "with_c" if not without_contrib else "without_c"
+    with_graph = "with_g" if not without_graph else "without_g"
+    with_delay = "with_d" if not without_delay else "without_d"
+    g_only_one = init_state_id
+    domain = domain_name
+    results = f"Domain name : {domain} - {with_delay}"
 
-nb_with_com = len(count_results["with_c"]["with_com"])
-ratio_success_with_com = get_ratio(nb_with_com, nb_success_with)
 
-nb_with_h_wait = len(count_results["with_c"]["h_wait"])
-ratio_sucess_with_h_wait = get_ratio(nb_with_h_wait, nb_success_with)
+    ###################
+    ### START TESTS ###
+    ###################
+    start_time = time.time()
+    os.system(f"rm {cd_results}runs/*")
+    os.system(f"rm {cd_results}run.txt")
+    run_test(with_contrib=with_contrib, with_graph=with_graph, with_delay=with_delay)
+    # run_test(with_contrib="without_c", with_graph=with_graph)
+    end_time = time.time()
+    elapsed_time = int((end_time - start_time)*100)/100
+    results+= "\nElasped time = {}s\n".format(elapsed_time)
+    ###################
+    #### END TESTS ####
+    ###################
 
-nb_with_non_rel_div = len(count_results["with_c"]["non_rel_div"])
-ratio_with_non_rel_div = get_ratio(nb_with_non_rel_div, nb_success_with)
+    av_nb_h_wait/=nb_plans
+    av_nb_com/=nb_plans
+    av_length/=nb_plans
+    av_nb_delay/=nb_plans
 
-nb_with_delayed = len(count_results["with_c"]["delayed"])
-ratio_with_delayed = get_ratio(nb_with_delayed, nb_success_with)
+    ## With_c ##
+    nb_failed_with = len(count_results["with_c"]["failed"])
+    nb_success_with = (total-nb_failed_with)
+    ratio_success_with = get_ratio(nb_success_with, total)
 
-## Without_c ##
-nb_failed_without = len(count_results["without_c"]["failed"])
-nb_success_without = len(count_results["without_c"]["success"])
-ratio_success_without = get_ratio(nb_success_without, total)
+    nb_with_com = len(count_results["with_c"]["with_com"])
+    ratio_success_with_com = get_ratio(nb_with_com, nb_success_with)
 
-nb_without_h_wait = len(count_results["without_c"]["h_wait"])
-ratio_without_h_wait = get_ratio(nb_without_h_wait, nb_success_without)
+    nb_with_h_wait = len(count_results["with_c"]["h_wait"])
+    ratio_sucess_with_h_wait = get_ratio(nb_with_h_wait, nb_success_with)
 
-nb_failed_without_rna = len(count_results["without_c"]["rna"])
-ratio_failed_wo_rna = get_ratio(nb_failed_without_rna, nb_failed_without)
+    nb_with_non_rel_div = len(count_results["with_c"]["non_rel_div"])
+    ratio_with_non_rel_div = get_ratio(nb_with_non_rel_div, nb_success_with)
 
-nb_failed_without_idl = len(count_results["without_c"]["idl"])
-ratio_failed_wo_idl = get_ratio(nb_failed_without_idl, nb_failed_without)
+    nb_with_delayed = len(count_results["with_c"]["delayed"])
+    ratio_with_delayed = get_ratio(nb_with_delayed, nb_success_with)
 
-nb_failed_without_other = len(count_results["without_c"]["other"])
-ratio_failed_wo_other = get_ratio(nb_failed_without_other, nb_failed_without)
+    ## Without_c ##
+    nb_failed_without = len(count_results["without_c"]["failed"])
+    nb_success_without = len(count_results["without_c"]["success"])
+    ratio_success_without = get_ratio(nb_success_without, total)
 
-results+= "\n=> DETAILED RESULTS <=:"
-results+= "\nCount (total={}) = ".format(total)
-results+= "\n\twith({} fail - {}% success) =".format(nb_failed_with, ratio_success_with)
-results+= "\n\t\twith_com({}- {}%) = {}".format(nb_with_com, ratio_success_with_com, count_results["with_c"]["with_com"])
-results+= "\n\t\th_wait({}- {}%) = {}".format(nb_with_h_wait, ratio_sucess_with_h_wait, count_results["with_c"]["h_wait"])
-results+= "\n\t\tnon_rel_div({}- {}%) = {}".format(nb_with_non_rel_div, ratio_with_non_rel_div, count_results["with_c"]["non_rel_div"])
-results+= "\n\t\tdelayed({}- {}%) = {}".format(nb_with_delayed, ratio_with_delayed, count_results["with_c"]["delayed"])
-results+= "\n\t\tfailed({}) = {}".format(nb_failed_with, count_results["with_c"]["failed"])
-results+= "\n\twithout({} fail- {}% success): ".format(nb_failed_without, ratio_success_without)
-results+= "\n\t\tsuccess({}) = {}".format(nb_success_without, count_results["without_c"]["success"])
-results+= "\n\t\th_wait({}- {}%) = {}".format(nb_without_h_wait, ratio_without_h_wait, count_results["without_c"]["h_wait"])
-results+= "\n\t\trna({}- {}%) = {}".format(nb_failed_without_rna, ratio_failed_wo_rna, count_results["without_c"]["rna"])
-results+= "\n\t\tidl({}- {}%) = {}".format(nb_failed_without_idl, ratio_failed_wo_idl, count_results["without_c"]["idl"])
-results+= "\n\t\tother({}- {}%) = {}".format(nb_failed_without_other, ratio_failed_wo_other, count_results["without_c"]["other"])
-results+= "\n"
-results+= "\n=> SHORT RESULTS <="
-results+= "\n {}: Old Solver: S={}% NA={}% IDL={}% Our Solver: S={}% Com={}%".format(domain, ratio_success_without, ratio_failed_wo_rna, ratio_failed_wo_idl, ratio_success_with, ratio_success_with_com)
-results+= f"\n {av_nb_com}, {av_nb_h_wait}, {av_length}, {av_nb_delay}"
+    nb_without_h_wait = len(count_results["without_c"]["h_wait"])
+    ratio_without_h_wait = get_ratio(nb_without_h_wait, nb_success_without)
 
-print(results)
+    nb_failed_without_rna = len(count_results["without_c"]["rna"])
+    ratio_failed_wo_rna = get_ratio(nb_failed_without_rna, nb_failed_without)
 
-f = open(cd_results+"run.txt", "w")
-f.write(results)
-f.close()
+    nb_failed_without_idl = len(count_results["without_c"]["idl"])
+    ratio_failed_wo_idl = get_ratio(nb_failed_without_idl, nb_failed_without)
+
+    nb_failed_without_other = len(count_results["without_c"]["other"])
+    ratio_failed_wo_other = get_ratio(nb_failed_without_other, nb_failed_without)
+
+    results+= "\n=> DETAILED RESULTS <=:"
+    results+= "\nCount (total={}) = ".format(total)
+    results+= "\n\twith({} fail - {}% success) =".format(nb_failed_with, ratio_success_with)
+    results+= "\n\t\twith_com({}- {}%) = {}".format(nb_with_com, ratio_success_with_com, count_results["with_c"]["with_com"])
+    results+= "\n\t\th_wait({}- {}%) = {}".format(nb_with_h_wait, ratio_sucess_with_h_wait, count_results["with_c"]["h_wait"])
+    results+= "\n\t\tnon_rel_div({}- {}%) = {}".format(nb_with_non_rel_div, ratio_with_non_rel_div, count_results["with_c"]["non_rel_div"])
+    results+= "\n\t\tdelayed({}- {}%) = {}".format(nb_with_delayed, ratio_with_delayed, count_results["with_c"]["delayed"])
+    results+= "\n\t\tfailed({}) = {}".format(nb_failed_with, count_results["with_c"]["failed"])
+    results+= "\n\twithout({} fail- {}% success): ".format(nb_failed_without, ratio_success_without)
+    results+= "\n\t\tsuccess({}) = {}".format(nb_success_without, count_results["without_c"]["success"])
+    results+= "\n\t\th_wait({}- {}%) = {}".format(nb_without_h_wait, ratio_without_h_wait, count_results["without_c"]["h_wait"])
+    results+= "\n\t\trna({}- {}%) = {}".format(nb_failed_without_rna, ratio_failed_wo_rna, count_results["without_c"]["rna"])
+    results+= "\n\t\tidl({}- {}%) = {}".format(nb_failed_without_idl, ratio_failed_wo_idl, count_results["without_c"]["idl"])
+    results+= "\n\t\tother({}- {}%) = {}".format(nb_failed_without_other, ratio_failed_wo_other, count_results["without_c"]["other"])
+    results+= "\n"
+    results+= "\n=> SHORT RESULTS <="
+    results+= "\n {}: Old Solver: S={}% NA={}% IDL={}% Our Solver: S={}% Com={}%".format(domain, ratio_success_without, ratio_failed_wo_rna, ratio_failed_wo_idl, ratio_success_with, ratio_success_with_com)
+    results+= f"\n {av_nb_com}, {av_nb_h_wait}, {av_length}, {av_nb_delay}"
+
+    print(results)
+
+    f = open(cd_results+"run.txt", "w")
+    f.write(results)
+    f.close()
+
+if __name__=='__main__':
+    main()

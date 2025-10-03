@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import sys
 
-sys.path.append("/home/afavier/ws/HATPEHDA/hatpehda")
+from hatpehda_pkg import gui 
+from hatpehda_pkg import hatpehda
+from hatpehda_pkg import CommonModule as CM
+from hatpehda_pkg import NodeModule as NM
 
-import hatpehda as htpa
-import CommonModule as CM
-import NodeModule as NM
-import gui
 from copy import deepcopy
 import time
 # import pickle
@@ -45,7 +44,7 @@ def SaltDonecond(agents, state, agent):
     return state.salt_added.val == True
 def SaltEff(agents, state_in, state_out, agent):
     state_out.salt_added.val = True
-saltAg = htpa.OperatorAg("add_salt", cost=SaltCost, donecond=SaltDonecond, effects=SaltEff)
+saltAg = hatpehda.OperatorAg("add_salt", cost=SaltCost, donecond=SaltDonecond, effects=SaltEff)
 
 # turn_on_pot_fire #
 def TurnOnPotFirePrecond(agents, state, agent):
@@ -54,7 +53,7 @@ def TurnOnPotFireDonecond(agents, state, agent):
     return state.pot_fire.val == "on"
 def TurnOnPotFireEff(agents, state_in, state_out, agent):
     state_out.pot_fire.val = "on"
-turnOnPotFireAg = htpa.OperatorAg("turn_on_pot_fire", precond=TurnOnPotFirePrecond, donecond=TurnOnPotFireDonecond, effects=TurnOnPotFireEff)
+turnOnPotFireAg = hatpehda.OperatorAg("turn_on_pot_fire", precond=TurnOnPotFirePrecond, donecond=TurnOnPotFireDonecond, effects=TurnOnPotFireEff)
 
 # move #
 def MoveDonecond(agents, state, agent, place):
@@ -64,7 +63,7 @@ def MoveEff(agents, state_in, state_out, agent, place):
     if state_in.at_pasta.val == agent:
         agents.set_fluent_loc("at_pasta", place)
     set_at(state_out, agent, place)
-moveAg = htpa.OperatorAg("move", donecond=MoveDonecond, effects=MoveEff)
+moveAg = hatpehda.OperatorAg("move", donecond=MoveDonecond, effects=MoveEff)
 
 # grab pasta #
 def GrabPastaPrecond(agents, state, agent):
@@ -73,21 +72,21 @@ def GrabPastaDonecond(agents, state, agent):
     return get_at(state, "pasta") == agent
 def GrabPastaEff(agents, state_in, state_out, agent):
     set_at(state_out, "pasta", agent)
-grabPastaAg = htpa.OperatorAg("grab_pasta", precond=GrabPastaPrecond, donecond=GrabPastaDonecond, effects=GrabPastaEff)
+grabPastaAg = hatpehda.OperatorAg("grab_pasta", precond=GrabPastaPrecond, donecond=GrabPastaDonecond, effects=GrabPastaEff)
 
 # pour pasta #
 def PourPastaPrecond(agents, state, agent):
     return get_at(state, "pasta") == agent and get_at(state, agent)=="kitchen" and state.salt_added.val and state.pot_fire.val=="on"
 def PourPastaEff(agents, state_in, state_out, agent):
     set_at(state_out, "pasta", get_at(state_in, agent))
-pourPastaAg = htpa.OperatorAg("pour_pasta", precond=PourPastaPrecond, effects=PourPastaEff)
+pourPastaAg = hatpehda.OperatorAg("pour_pasta", precond=PourPastaPrecond, effects=PourPastaEff)
 
 # cleanCounter #
 def CleanCounterPrecond(agents, state, agent):
     return get_at(state, agent)=="kitchen"
 def CleanCounterEffects(agents, state_in, state_out, agent):
     state_out.counter_clean.val = True
-cleanCounterAg = htpa.OperatorAg("clean_counter", precond=CleanCounterPrecond, effects=CleanCounterEffects)
+cleanCounterAg = hatpehda.OperatorAg("clean_counter", precond=CleanCounterPrecond, effects=CleanCounterEffects)
 
 common_ag = [saltAg, turnOnPotFireAg, moveAg]
 robot_operator_ag = common_ag + [cleanCounterAg]
@@ -244,20 +243,22 @@ def initDomain(n):
     CM.init_other_agent_name()
 
     # Initial state
-    initial_state = htpa.State("init")
+    initial_state = hatpehda.State("init")
 
     # Static properties
-    initial_state.create_fluent("self_name", "None", htpa.ObsType.OBS, "none", False)
-    initial_state.create_fluent("other_agent_name", {robot_name:human_name, human_name:robot_name}, htpa.ObsType.OBS, "none", False) 
+    initial_state.create_fluent("self_name", "None", hatpehda.ObsType.OBS, "none", False)
+    initial_state.create_fluent("other_agent_name", {robot_name:human_name, human_name:robot_name}, hatpehda.ObsType.OBS, "none", False) 
 
     # Generate initial state
     domains = {
+        # ground truth
         "at_robot":         ["kitchen", "room"], # add h_at_robot ?
         "at_human":         ["kitchen", "room"],
-        "at_pasta":         ["kitchen", "room"],
+        "at_pasta":         ["room", "kitchen"],
         "salt_added":       [False, True],
         "pot_fire":         ["off", "on"],
-        "h_at_pasta":       ["kitchen", "room"],
+        # Human beliefs
+        "h_at_pasta":       ["room", "kitchen"],
         "h_salt_added":     [False, True],
         "h_pot_fire":       ["off", "on"],
         "starting_agent":   [robot_name, human_name],
@@ -269,31 +270,31 @@ def initDomain(n):
         values[f] = domains[f][bin_array[i]]
 
     # Dynamic properties
-    initial_state.create_fluent("at_robot",     values["at_robot"],     htpa.ObsType.OBS, values["at_robot"],   True)
-    initial_state.create_fluent("at_human",     values["at_human"],     htpa.ObsType.OBS, values["at_human"],   True) 
-    initial_state.create_fluent("at_pasta",     values["at_pasta"],     htpa.ObsType.OBS, values["at_pasta"],   True)
-    initial_state.create_fluent("salt_added",   values["salt_added"],   htpa.ObsType.INF, "kitchen",            True)
-    initial_state.create_fluent("pot_fire",     values["pot_fire"],     htpa.ObsType.OBS, "kitchen",            True)
-    initial_state.create_fluent("counter_clean", False,                 htpa.ObsType.INF, "kichen",             True)
+    initial_state.create_fluent("at_robot",     values["at_robot"],     hatpehda.ObsType.OBS, values["at_robot"],   True)
+    initial_state.create_fluent("at_human",     values["at_human"],     hatpehda.ObsType.OBS, values["at_human"],   True) 
+    initial_state.create_fluent("at_pasta",     values["at_pasta"],     hatpehda.ObsType.OBS, values["at_pasta"],   True)
+    initial_state.create_fluent("salt_added",   values["salt_added"],   hatpehda.ObsType.INF, "kitchen",            True)
+    initial_state.create_fluent("pot_fire",     values["pot_fire"],     hatpehda.ObsType.OBS, "kitchen",            True)
+    initial_state.create_fluent("counter_clean", False,                 hatpehda.ObsType.INF, "kichen",             True)
 
     # Robot
-    htpa.declare_operators_ag(robot_name, robot_operator_ag)
+    hatpehda.declare_operators_ag(robot_name, robot_operator_ag)
     for me in ctrl_methods:
-        htpa.declare_methods(robot_name, *me)
-    htpa.declare_triggers(robot_name, *robot_triggers)
-    htpa.set_observable_function("robot", isObs)
+        hatpehda.declare_methods(robot_name, *me)
+    hatpehda.declare_triggers(robot_name, *robot_triggers)
+    hatpehda.set_observable_function("robot", isObs)
     robot_state = deepcopy(initial_state)
     robot_state.self_name.val = robot_name
     robot_state.__name__ = robot_name + "_init"
-    htpa.set_state(robot_name, robot_state)
-    htpa.add_tasks(robot_name, [("cook",), ("come_clean_counter",)])
+    hatpehda.set_state(robot_name, robot_state)
+    hatpehda.add_tasks(robot_name, [("cook",), ("come_clean_counter",)])
 
     # Human
-    htpa.declare_operators_ag(human_name, human_operator_ag)
+    hatpehda.declare_operators_ag(human_name, human_operator_ag)
     for me in unctrl_methods:
-        htpa.declare_methods(human_name, *me)
-    htpa.declare_triggers(human_name, *human_triggers)
-    htpa.set_observable_function("human", isObs)
+        hatpehda.declare_methods(human_name, *me)
+    hatpehda.declare_triggers(human_name, *human_triggers)
+    hatpehda.set_observable_function("human", isObs)
     human_state = deepcopy(initial_state)
     human_state.__name__ = human_name + "_init"
     human_state.reset_fluent_locs()
@@ -301,8 +302,8 @@ def initDomain(n):
     human_state.at_pasta.val = values["h_at_pasta"]
     human_state.salt_added.val = values["h_salt_added"]
     human_state.pot_fire.val = values["h_pot_fire"]
-    htpa.set_state(human_name, human_state)
-    htpa.add_tasks(human_name, [("cook",)])
+    hatpehda.set_state(human_name, human_state)
+    hatpehda.add_tasks(human_name, [("cook",)])
 
     # Starting Agent
     CM.set_starting_agent(values["starting_agent"])
@@ -312,35 +313,35 @@ def node_explo(with_contrib, with_graph, with_delay, n):
     human_name = CM.get_human_name()
 
     print("INITIAL STATES")
-    htpa.show_init()
+    hatpehda.show_init()
 
     CM.set_debug(True)
-    # htpa.set_compute_gui(True)
-    # htpa.set_view_gui(True)
-    # htpa.set_stop_input(True)
-    # htpa.set_debug_agenda(True)
-    # htpa.set_stop_input_agenda(True)
+    # hatpehda.set_compute_gui(True)
+    # hatpehda.set_view_gui(True)
+    # hatpehda.set_stop_input(True)
+    # hatpehda.set_debug_agenda(True)
+    # hatpehda.set_stop_input_agenda(True)
 
     n_plot = 0
     print("Start first exploration")
     first_explo_dur = time.time()
-    first_node, Ns, u_flagged_nodes, n_plot = htpa.heuristic_exploration(n_plot)
+    first_node, Ns, u_flagged_nodes, n_plot = hatpehda.heuristic_exploration(n_plot)
     first_explo_dur = int((time.time() - first_explo_dur)*1000)
     print("\t=> time spent first exploration = {}ms".format(first_explo_dur))
-    # htpa.gui.show_tree(first_node, "sol", view=True)
-    # htpa.gui.show_all(htpa.get_last_nodes_action(first_node), robot_name, human_name, with_begin="false", with_abstract="true")
+    # hatpehda.gui.show_tree(first_node, "sol", view=True)
+    # hatpehda.gui.show_all(hatpehda.get_last_nodes_action(first_node), robot_name, human_name, with_begin="false", with_abstract="true")
     # input()
 
-    # htpa.set_debug(True)
-    # htpa.set_compute_gui(True)
-    # htpa.set_view_gui(True)
-    # htpa.set_stop_input(True)
-    # htpa.set_debug_agenda(True)
-    # htpa.set_stop_input_agenda(True)
+    # hatpehda.set_debug(True)
+    # hatpehda.set_compute_gui(True)
+    # hatpehda.set_view_gui(True)
+    # hatpehda.set_stop_input(True)
+    # hatpehda.set_debug_agenda(True)
+    # hatpehda.set_stop_input_agenda(True)
 
     print("Start refining u nodes")
     refine_u_dur = time.time()
-    htpa.refine_u_nodes(first_node, u_flagged_nodes, n_plot)
+    hatpehda.refine_u_nodes(first_node, u_flagged_nodes, n_plot)
     refine_u_dur = int((time.time() - refine_u_dur)*1000)
     print("\t=> time spent refining = {}ms".format(refine_u_dur))
     print("Total duration = {}ms".format(first_explo_dur+refine_u_dur))
@@ -363,18 +364,19 @@ def node_explo(with_contrib, with_graph, with_delay, n):
     view = False
     if with_graph:
         gui.show_all(NM.get_last_nodes_action(first_node), robot_name, human_name, n, with_contrib, with_delay, with_begin="false", with_abstract="false", view=view)
-        # htpa.gui.show_tree(first_node, "sol", view=view)
+        # hatpehda.gui.show_tree(first_node, "sol", view=view)
 
-if __name__ == "__main__":
-
-    # sys.argv = ['/home/afavier/ws/HATPEHDA/domains_and_results/cooking_pasta.py', 'with_c', 'with_g', 'with_d', 65]
-    if len(sys.argv) != 5:
-        print("argv({})={}".format(len(sys.argv), sys.argv))
-        raise Exception("Missing arguements! (with_contrib, with_graph, with_delay, n)")
-    with_contrib = sys.argv[1]=="with_c"
-    with_graph = sys.argv[2]=="with_g"
-    with_delay = sys.argv[3]=="with_d"
-    n = int(sys.argv[4])
+import click
+@click.command(help="INIT_STATE_ID (INT) is the initial state config (Default = 0)")
+@click.argument('init_state_id', default=0)
+@click.option('--without_contrib', is_flag=True, default=False, help="Disable contribution: only HATPEHDA.")
+@click.option('--without_graph', is_flag=True, default=False, help="Disable generation of image graph of solution plan.")
+@click.option('--without_delay', is_flag=True, default=False, help="Disable usage of Delay.")
+def main(init_state_id, without_contrib, without_graph, without_delay):
+    with_contrib = not without_contrib
+    with_graph = not without_graph
+    with_delay = not without_delay
+    n = init_state_id
 
     print("RUN N={} With={}".format(n, with_contrib))
     initDomain(n)
@@ -382,3 +384,6 @@ if __name__ == "__main__":
     CM.set_with_delay(with_delay)
 
     node_explo(with_contrib, with_graph, with_delay, n)
+
+if __name__ == "__main__":
+    main()

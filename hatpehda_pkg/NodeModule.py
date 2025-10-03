@@ -1,11 +1,10 @@
 from enum import Enum
 from typing import Any, Dict
 import sys
-sys.path.append("/home/afavier/ws/HATPEHDA/hatpehda")
 
 
-import CommonModule as CM
-import NodeModule as NM
+from hatpehda_pkg import CommonModule as CM
+from hatpehda_pkg import NodeModule as NM
 
 class Node:
     __ID = 0

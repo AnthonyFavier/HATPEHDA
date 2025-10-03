@@ -2,10 +2,6 @@ from graphviz import Digraph
 import os
 import sys
 
-sys.path.append("/home/afavier/ws/HATPEHDA/hatpehda")
-
-import hatpehda
-
 def show_plan(actions, controlable_agent, uncontrolable_agent, with_abstract=True):
     dot = Digraph(comment='Plan', format="png")
     dot.attr(fontsize="20")

@@ -22,12 +22,9 @@ import sys
 from enum import Enum
 from typing import Any, Dict
 
-sys.path.append("/home/afavier/ws/HATPEHDA/hatpehda")
-
-import gui
-
-import CommonModule as CM
-import NodeModule as NM
+from hatpehda_pkg import gui
+from hatpehda_pkg import CommonModule as CM
+from hatpehda_pkg import NodeModule as NM
 
 
 ############################################################

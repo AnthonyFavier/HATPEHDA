@@ -2,3 +2,4 @@ dill
 pip
 graphviz
 numpy
+click

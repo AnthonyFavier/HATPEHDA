@@ -34,10 +34,11 @@ Produced plans are shown in the shell but for more legibility an image graph is 
 ## Several runs
 
 You can you the `test_runner.py` script to run each file or even run all problems of a domain.
-Instructions below regarding arguements
 
-It takes as arguments firs the domain name (cooking_pasta, box_prepare, car_maintenance)
-Then if the delay feature should be use, write "with_d" to enable it, and "without_d" to do without.
-Finally, use can add a Id to run the corresponding configuration. Not providing this argument will run sequentially all possible configuration (512 runs).
+Run the following for help:
+```
+python3 test_runner.py --help
+```
+
 
 All results are stored in domains_and_results/results/. A full log report is stored as "run.txt" and all runs are stored in domains_and_results/results/runs/. Each run has a picture of the solution tree and its associated text log file.
